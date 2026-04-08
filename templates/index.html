@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>図書館蔵書検索</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>図書館蔵書検索</h1>
+  </header>
+
+  <main>
+    <section class="search-box">
+      <div class="search-row">
+        <input type="text" id="query" placeholder="タイトル・著者名・ISBNで検索..." autocomplete="off">
+        <button id="search-btn">検索</button>
+      </div>
+      <div class="filter-row">
+        <label>
+          ジャンル:
+          <select id="genre">
+            <option value="">すべて</option>
+            {% for g in genres %}
+            <option value="{{ g }}">{{ g }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="available-only">
+          貸出可能のみ表示
+        </label>
+      </div>
+    </section>
+
+    <section id="results-section">
+      <div id="result-count"></div>
+      <div id="results"></div>
+    </section>
+  </main>
+
+  <!-- Detail modal -->
+  <div id="modal-overlay" class="hidden">
+    <div id="modal">
+      <button id="modal-close">&times;</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <script>
+    const queryInput = document.getElementById('query');
+    const genreSelect = document.getElementById('genre');
+    const availableOnly = document.getElementById('available-only');
+    const searchBtn = document.getElementById('search-btn');
+    const resultsEl = document.getElementById('results');
+    const resultCount = document.getElementById('result-count');
+    const overlay = document.getElementById('modal-overlay');
+    const modalContent = document.getElementById('modal-content');
+
+    let debounceTimer;
+
+    function search() {
+      const params = new URLSearchParams();
+      const q = queryInput.value.trim();
+      if (q) params.set('q', q);
+      const g = genreSelect.value;
+      if (g) params.set('genre', g);
+      if (availableOnly.checked) params.set('available_only', '1');
+
+      fetch('/api/search?' + params.toString())
+        .then(r => r.json())
+        .then(books => render(books));
+    }
+
+    function render(books) {
+      resultCount.textContent = `${books.length} 件見つかりました`;
+      if (books.length === 0) {
+        resultsEl.innerHTML = '<p class="no-result">該当する書籍はありませんでした。</p>';
+        return;
+      }
+      resultsEl.innerHTML = books.map(b => `
+        <div class="book-card ${b.available ? 'available' : 'unavailable'}" data-id="${b.id}">
+          <div class="book-status">${b.available ? '貸出可' : '貸出中'}</div>
+          <div class="book-title">${escHtml(b.title)}</div>
+          <div class="book-author">${escHtml(b.author)}</div>
+          <div class="book-meta">${escHtml(b.genre)} &middot; ${b.year ?? ''}年</div>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.book-card').forEach(card => {
+        card.addEventListener('click', () => showDetail(card.dataset.id));
+      });
+    }
+
+    function showDetail(id) {
+      fetch('/api/book/' + id)
+        .then(r => r.json())
+        .then(b => {
+          modalContent.innerHTML = `
+            <h2>${escHtml(b.title)}</h2>
+            <table class="detail-table">
+              <tr><th>著者</th><td>${escHtml(b.author)}</td></tr>
+              <tr><th>ジャンル</th><td>${escHtml(b.genre)}</td></tr>
+              <tr><th>出版年</th><td>${b.year ?? '不明'}年</td></tr>
+              <tr><th>ISBN</th><td>${escHtml(b.isbn)}</td></tr>
+              <tr><th>貸出状況</th><td class="${b.available ? 'status-ok' : 'status-ng'}">${b.available ? '貸出可能' : '貸出中'}</td></tr>
+            </table>
+          `;
+          overlay.classList.remove('hidden');
+        });
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    searchBtn.addEventListener('click', search);
+    queryInput.addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
+    queryInput.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(search, 300);
+    });
+    genreSelect.addEventListener('change', search);
+    availableOnly.addEventListener('change', search);
+
+    document.getElementById('modal-close').addEventListener('click', () => overlay.classList.add('hidden'));
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
+
+    // Initial load
+    search();
+  </script>
+</body>
+</html>

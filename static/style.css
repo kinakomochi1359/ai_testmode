@@ -1,0 +1,223 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  background: #f5f6fa;
+  color: #2d3436;
+  min-height: 100vh;
+}
+
+header {
+  background: #2c3e50;
+  color: #fff;
+  padding: 1.2rem 2rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+}
+
+header h1 {
+  font-size: 1.6rem;
+  letter-spacing: .05em;
+}
+
+main {
+  max-width: 960px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+/* Search box */
+.search-box {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.4rem 1.6rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  margin-bottom: 1.8rem;
+}
+
+.search-row {
+  display: flex;
+  gap: .6rem;
+  margin-bottom: 1rem;
+}
+
+.search-row input {
+  flex: 1;
+  padding: .7rem 1rem;
+  border: 1.5px solid #dfe6e9;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color .2s;
+}
+
+.search-row input:focus { border-color: #2c3e50; }
+
+.search-row button {
+  padding: .7rem 1.4rem;
+  background: #2c3e50;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background .2s;
+}
+
+.search-row button:hover { background: #34495e; }
+
+.filter-row {
+  display: flex;
+  gap: 1.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-row label { font-size: .95rem; color: #636e72; }
+
+.filter-row select {
+  margin-left: .4rem;
+  padding: .35rem .6rem;
+  border: 1.5px solid #dfe6e9;
+  border-radius: 5px;
+  font-size: .95rem;
+  outline: none;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  cursor: pointer;
+}
+
+/* Result count */
+#result-count {
+  font-size: .9rem;
+  color: #636e72;
+  margin-bottom: .8rem;
+}
+
+/* Book cards grid */
+#results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.book-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1rem 1.1rem 1.2rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,.07);
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+  border-top: 4px solid transparent;
+  position: relative;
+}
+
+.book-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0,0,0,.12);
+}
+
+.book-card.available { border-top-color: #00b894; }
+.book-card.unavailable { border-top-color: #d63031; }
+
+.book-status {
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  margin-bottom: .5rem;
+}
+
+.available .book-status { color: #00b894; }
+.unavailable .book-status { color: #d63031; }
+
+.book-title {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: .4rem;
+}
+
+.book-author {
+  font-size: .88rem;
+  color: #636e72;
+  margin-bottom: .3rem;
+}
+
+.book-meta {
+  font-size: .8rem;
+  color: #b2bec3;
+}
+
+.no-result {
+  color: #636e72;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+/* Modal */
+.hidden { display: none !important; }
+
+#modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+#modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem 2.2rem;
+  max-width: 480px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0,0,0,.2);
+}
+
+#modal-close {
+  position: absolute;
+  top: .8rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #636e72;
+  line-height: 1;
+}
+
+#modal-close:hover { color: #2d3436; }
+
+#modal-content h2 {
+  font-size: 1.3rem;
+  margin-bottom: 1.2rem;
+  line-height: 1.4;
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.detail-table th,
+.detail-table td {
+  padding: .55rem .6rem;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: .95rem;
+  text-align: left;
+}
+
+.detail-table th {
+  width: 7rem;
+  color: #636e72;
+  font-weight: 600;
+}
+
+.status-ok { color: #00b894; font-weight: 700; }
+.status-ng { color: #d63031; font-weight: 700; }
