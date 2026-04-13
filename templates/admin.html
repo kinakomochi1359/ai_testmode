@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理画面 - 図書館蔵書管理</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="admin-header-inner">
+      <h1>蔵書管理</h1>
+      <a href="/" class="header-link">← 検索画面へ</a>
+    </div>
+  </header>
+
+  <main class="admin-main">
+
+    <!-- ========== ISBN 照会・登録 ========== -->
+    <section class="admin-card">
+      <h2 class="admin-section-title">ISBN 照会・登録</h2>
+
+      <div class="lookup-row">
+        <input type="text" id="isbn-input" placeholder="例: 978-4-8222-5501-0" autocomplete="off" maxlength="17">
+        <button id="lookup-btn" class="btn-primary">照会</button>
+      </div>
+      <p id="lookup-error" class="form-error hidden"></p>
+
+      <!-- プレビューパネル -->
+      <div id="preview-panel" class="preview-panel hidden">
+        <div class="preview-cover">
+          <img id="preview-img" src="" alt="書影" onerror="this.style.display='none'; document.getElementById('no-cover').style.display='flex'">
+          <div id="no-cover" class="no-cover" style="display:none">書影なし</div>
+        </div>
+        <div class="preview-info">
+          <div class="preview-ndl-badge">国立国会図書館より取得</div>
+          <div class="form-grid">
+            <label class="form-label">ISBN
+              <input type="text" id="f-isbn" class="form-input" readonly>
+            </label>
+            <label class="form-label">タイトル <span class="required">*</span>
+              <input type="text" id="f-title" class="form-input" placeholder="タイトルを入力">
+            </label>
+            <label class="form-label">著者
+              <input type="text" id="f-author" class="form-input" placeholder="著者名">
+            </label>
+            <label class="form-label">出版社
+              <input type="text" id="f-publisher" class="form-input" readonly>
+            </label>
+            <label class="form-label">出版年
+              <input type="number" id="f-year" class="form-input" min="1000" max="2099" placeholder="例: 2024">
+            </label>
+            <label class="form-label">ジャンル <span class="required">*</span>
+              <input type="text" id="f-genre" class="form-input" list="genre-list" placeholder="例: 小説 / コンピュータ">
+              <datalist id="genre-list"></datalist>
+            </label>
+          </div>
+          <div class="preview-actions">
+            <button id="register-btn" class="btn-primary">この本を登録する</button>
+            <button id="cancel-btn" class="btn-ghost">キャンセル</button>
+          </div>
+          <p id="register-error" class="form-error hidden"></p>
+          <p id="register-success" class="form-success hidden"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 蔵書一覧 ========== -->
+    <section class="admin-card">
+      <div class="book-list-header">
+        <h2 class="admin-section-title">登録済み蔵書一覧</h2>
+        <div class="list-controls">
+          <input type="text" id="list-search" placeholder="タイトル・著者で絞り込み" class="list-search-input">
+          <span id="list-count" class="list-count"></span>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="book-table">
+          <thead>
+            <tr>
+              <th class="col-cover">書影</th>
+              <th class="col-title">タイトル / 著者</th>
+              <th class="col-genre">ジャンル</th>
+              <th class="col-year">出版年</th>
+              <th class="col-isbn">ISBN</th>
+              <th class="col-status">貸出状況</th>
+              <th class="col-action"></th>
+            </tr>
+          </thead>
+          <tbody id="book-tbody"></tbody>
+        </table>
+        <p id="table-empty" class="no-result hidden">登録された書籍はありません。</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 削除確認モーダル -->
+  <div id="confirm-overlay" class="hidden">
+    <div id="confirm-modal">
+      <p id="confirm-msg"></p>
+      <div class="confirm-actions">
+        <button id="confirm-ok" class="btn-danger">削除する</button>
+        <button id="confirm-cancel" class="btn-ghost">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ---- utils ---- */
+    function esc(s) {
+      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function thumbnailUrl(isbn) {
+      const clean = String(isbn).replace(/[^0-9X]/gi, '');
+      return clean.length === 13 ? `https://ndlsearch.ndl.go.jp/thumbnail/${clean}.jpg` : null;
+    }
+    function showEl(id)  { document.getElementById(id).classList.remove('hidden'); }
+    function hideEl(id)  { document.getElementById(id).classList.add('hidden'); }
+    function setText(id, t) { document.getElementById(id).textContent = t; }
+
+    /* ---- genre datalist ---- */
+    fetch('/api/search')
+      .then(r => r.json())
+      .then(books => {
+        const genres = [...new Set(books.map(b => b.genre))].sort();
+        const dl = document.getElementById('genre-list');
+        dl.innerHTML = genres.map(g => `<option value="${esc(g)}">`).join('');
+      });
+
+    /* ---- ISBN 照会 ---- */
+    const isbnInput   = document.getElementById('isbn-input');
+    const lookupBtn   = document.getElementById('lookup-btn');
+    const previewPanel = document.getElementById('preview-panel');
+    let currentThumbnail = null;
+
+    function resetPreview() {
+      previewPanel.classList.add('hidden');
+      hideEl('lookup-error');
+      hideEl('register-error');
+      hideEl('register-success');
+    }
+
+    async function doLookup() {
+      const isbn = isbnInput.value.trim();
+      if (!isbn) return;
+      lookupBtn.disabled = true;
+      lookupBtn.textContent = '照会中…';
+      hideEl('lookup-error');
+
+      try {
+        const res = await fetch('/api/admin/lookup?' + new URLSearchParams({ isbn }));
+        const data = await res.json();
+        if (!res.ok) {
+          setText('lookup-error', data.error);
+          showEl('lookup-error');
+          previewPanel.classList.add('hidden');
+          return;
+        }
+        fillPreview(data);
+      } catch {
+        setText('lookup-error', 'ネットワークエラーが発生しました');
+        showEl('lookup-error');
+      } finally {
+        lookupBtn.disabled = false;
+        lookupBtn.textContent = '照会';
+      }
+    }
+
+    function fillPreview(data) {
+      document.getElementById('f-isbn').value      = data.isbn ?? '';
+      document.getElementById('f-title').value     = data.title ?? '';
+      document.getElementById('f-author').value    = data.author ?? '';
+      document.getElementById('f-publisher').value = data.publisher ?? '';
+      document.getElementById('f-year').value      = data.year ?? '';
+      document.getElementById('f-genre').value     = '';
+
+      const img    = document.getElementById('preview-img');
+      const noCover = document.getElementById('no-cover');
+      if (data.thumbnail_url) {
+        img.src = data.thumbnail_url;
+        img.style.display = '';
+        noCover.style.display = 'none';
+        currentThumbnail = data.thumbnail_url;
+      } else {
+        img.style.display = 'none';
+        noCover.style.display = 'flex';
+        currentThumbnail = null;
+      }
+
+      hideEl('register-error');
+      hideEl('register-success');
+      previewPanel.classList.remove('hidden');
+    }
+
+    lookupBtn.addEventListener('click', doLookup);
+    isbnInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLookup(); });
+    document.getElementById('cancel-btn').addEventListener('click', resetPreview);
+
+    /* ---- 書籍登録 ---- */
+    document.getElementById('register-btn').addEventListener('click', async () => {
+      hideEl('register-error');
+      hideEl('register-success');
+
+      const body = {
+        isbn:   document.getElementById('f-isbn').value.trim(),
+        title:  document.getElementById('f-title').value.trim(),
+        author: document.getElementById('f-author').value.trim(),
+        genre:  document.getElementById('f-genre').value.trim(),
+        year:   parseInt(document.getElementById('f-year').value) || null,
+      };
+
+      if (!body.title) { setText('register-error', 'タイトルは必須です'); showEl('register-error'); return; }
+      if (!body.genre) { setText('register-error', 'ジャンルは必須です'); showEl('register-error'); return; }
+
+      const btn = document.getElementById('register-btn');
+      btn.disabled = true;
+      btn.textContent = '登録中…';
+
+      try {
+        const res  = await fetch('/api/admin/books', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setText('register-error', data.error);
+          showEl('register-error');
+        } else {
+          setText('register-success', `「${data.title}」を登録しました`);
+          showEl('register-success');
+          isbnInput.value = '';
+          setTimeout(resetPreview, 2000);
+          loadBooks();
+        }
+      } catch {
+        setText('register-error', 'ネットワークエラーが発生しました');
+        showEl('register-error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'この本を登録する';
+      }
+    });
+
+    /* ---- 蔵書一覧 ---- */
+    let allBooks = [];
+    const tbody       = document.getElementById('book-tbody');
+    const listSearch  = document.getElementById('list-search');
+    const listCount   = document.getElementById('list-count');
+    const tableEmpty  = document.getElementById('table-empty');
+
+    async function loadBooks() {
+      const res   = await fetch('/api/admin/books');
+      allBooks    = await res.json();
+      renderTable(allBooks);
+    }
+
+    function renderTable(books) {
+      const q = listSearch.value.trim().toLowerCase();
+      const filtered = q
+        ? books.filter(b => b.title.toLowerCase().includes(q) || (b.author ?? '').toLowerCase().includes(q))
+        : books;
+
+      listCount.textContent = `${filtered.length} 件`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        tableEmpty.classList.remove('hidden');
+        return;
+      }
+      tableEmpty.classList.add('hidden');
+
+      tbody.innerHTML = filtered.map(b => {
+        const thumb = thumbnailUrl(b.isbn);
+        return `
+        <tr data-id="${b.id}">
+          <td class="col-cover">
+            ${thumb
+              ? `<img class="thumb" src="${esc(thumb)}" alt="" onerror="this.style.display='none'">`
+              : '<span class="no-thumb">-</span>'}
+          </td>
+          <td class="col-title">
+            <div class="book-title-cell">${esc(b.title)}</div>
+            <div class="book-author-cell">${esc(b.author ?? '')}</div>
+          </td>
+          <td class="col-genre"><span class="genre-tag">${esc(b.genre)}</span></td>
+          <td class="col-year">${b.year ?? '-'}</td>
+          <td class="col-isbn"><span class="isbn-text">${esc(b.isbn)}</span></td>
+          <td class="col-status">
+            <button class="status-btn ${b.available ? 'status-ok' : 'status-ng'}"
+                    data-id="${b.id}" data-toggle>
+              ${b.available ? '貸出可' : '貸出中'}
+            </button>
+          </td>
+          <td class="col-action">
+            <button class="btn-delete" data-id="${b.id}" data-title="${esc(b.title)}" data-del>削除</button>
+          </td>
+        </tr>`;
+      }).join('');
+
+      // トグルボタン
+      tbody.querySelectorAll('[data-toggle]').forEach(btn => {
+        btn.addEventListener('click', () => toggleAvailable(Number(btn.dataset.id)));
+      });
+      // 削除ボタン
+      tbody.querySelectorAll('[data-del]').forEach(btn => {
+        btn.addEventListener('click', () => confirmDelete(Number(btn.dataset.id), btn.dataset.title));
+      });
+    }
+
+    listSearch.addEventListener('input', () => renderTable(allBooks));
+
+    async function toggleAvailable(id) {
+      const res  = await fetch(`/api/admin/books/${id}/available`, { method: 'PUT' });
+      const data = await res.json();
+      allBooks   = allBooks.map(b => b.id === id ? data : b);
+      renderTable(allBooks);
+    }
+
+    /* ---- 削除確認 ---- */
+    let pendingDeleteId = null;
+    const confirmOverlay = document.getElementById('confirm-overlay');
+
+    function confirmDelete(id, title) {
+      pendingDeleteId = id;
+      setText('confirm-msg', `「${title}」を削除します。よろしいですか？`);
+      confirmOverlay.classList.remove('hidden');
+    }
+
+    document.getElementById('confirm-ok').addEventListener('click', async () => {
+      if (pendingDeleteId === null) return;
+      await fetch(`/api/admin/books/${pendingDeleteId}`, { method: 'DELETE' });
+      allBooks = allBooks.filter(b => b.id !== pendingDeleteId);
+      renderTable(allBooks);
+      confirmOverlay.classList.add('hidden');
+      pendingDeleteId = null;
+    });
+
+    document.getElementById('confirm-cancel').addEventListener('click', () => {
+      confirmOverlay.classList.add('hidden');
+      pendingDeleteId = null;
+    });
+
+    loadBooks();
+  </script>
+</body>
+</html>
