@@ -498,8 +498,6 @@ main {
 
 /* ---- プレビューパネル ---- */
 .preview-panel {
-  display: flex;
-  gap: 1.8rem;
   margin-top: 1.4rem;
   padding: 1.4rem;
   background: #f8f9fb;
@@ -507,21 +505,28 @@ main {
   border: 1.5px solid #e8eaf0;
 }
 
+.preview-top {
+  display: flex;
+  gap: 1.4rem;
+  margin-bottom: 1.4rem;
+  align-items: flex-start;
+}
+
 .preview-cover {
   flex-shrink: 0;
-  width: 120px;
+  width: 100px;
 }
 
 .preview-cover img {
-  width: 120px;
+  width: 100px;
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0,0,0,.15);
   display: block;
 }
 
 .no-cover {
-  width: 120px;
-  height: 160px;
+  width: 100px;
+  height: 140px;
   background: #dfe6e9;
   border-radius: 4px;
   display: flex;
@@ -531,7 +536,7 @@ main {
   color: #636e72;
 }
 
-.preview-info { flex: 1; min-width: 0; }
+.preview-top-right { flex: 1; }
 
 .preview-ndl-badge {
   display: inline-block;
@@ -540,38 +545,79 @@ main {
   background: #eaf0fb;
   border-radius: 4px;
   padding: .2rem .6rem;
-  margin-bottom: .9rem;
+  margin-bottom: .6rem;
+}
+
+.preview-hint {
+  font-size: .85rem;
+  color: #636e72;
+  line-height: 1.6;
+}
+
+/* ---- bib フォーム ---- */
+.bib-form { display: flex; flex-direction: column; gap: 1rem; }
+
+.bib-section {
+  border: 1.5px solid #e8eaf0;
+  border-radius: 8px;
+  padding: 1rem 1.2rem 1.2rem;
+  background: #fff;
+}
+
+.bib-section legend {
+  font-size: .82rem;
+  font-weight: 700;
+  color: #2c3e50;
+  background: #fff;
+  padding: 0 .5rem;
+  letter-spacing: .04em;
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: .7rem 1rem;
-  margin-bottom: 1rem;
+  gap: .6rem .9rem;
+  margin-top: .7rem;
 }
 
 .form-label {
   display: flex;
   flex-direction: column;
-  gap: .25rem;
-  font-size: .85rem;
+  gap: .22rem;
+  font-size: .82rem;
   color: #636e72;
   font-weight: 600;
 }
 
+.col-span-2 { grid-column: span 2; }
+
+.form-hint {
+  font-size: .75rem;
+  color: #6c5ce7;
+  margin-top: .1rem;
+}
+
 .form-input {
-  padding: .5rem .7rem;
+  padding: .45rem .65rem;
   border: 1.5px solid #dfe6e9;
   border-radius: 5px;
-  font-size: .95rem;
+  font-size: .92rem;
   outline: none;
   background: #fff;
   transition: border-color .15s;
+  width: 100%;
 }
 .form-input:focus { border-color: #2c3e50; }
 .form-input[readonly] { background: #f0f2f5; color: #636e72; }
 
-.preview-actions { display: flex; gap: .6rem; align-items: center; }
+.preview-actions {
+  display: flex;
+  gap: .6rem;
+  align-items: center;
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1.5px solid #e8eaf0;
+}
 
 /* ---- 一覧ヘッダー ---- */
 .book-list-header {
@@ -632,10 +678,17 @@ main {
 .col-cover  { width: 56px; }
 .col-title  { min-width: 180px; }
 .col-genre  { width: 90px; }
+.col-ndc    { width: 70px; font-size: .82rem; color: #636e72; font-family: monospace; }
 .col-year   { width: 70px; text-align: center; }
 .col-isbn   { width: 160px; }
 .col-status { width: 90px; text-align: center; }
 .col-action { width: 70px; text-align: center; }
+
+.book-series-cell {
+  font-size: .75rem;
+  color: #6c5ce7;
+  margin-top: .1rem;
+}
 
 .thumb {
   width: 40px;
