@@ -60,5 +60,49 @@ def book_detail(book_id):
     return jsonify(dict(book))
 
 
+@app.route("/api/occupations")
+def list_occupations():
+    db = get_db()
+    rows = db.execute("""
+        SELECT o.id, o.name, o.description, o.icon,
+               COUNT(ob.id) AS book_count
+        FROM occupations o
+        LEFT JOIN occupation_books ob ON ob.occupation_id = o.id
+        GROUP BY o.id
+        ORDER BY o.id
+    """).fetchall()
+    db.close()
+    return jsonify([dict(r) for r in rows])
+
+
+@app.route("/api/occupations/<int:occupation_id>/books")
+def occupation_books(occupation_id):
+    available_only = request.args.get("available_only", "") == "1"
+
+    sql = """
+        SELECT b.*, ob.note
+        FROM occupation_books ob
+        JOIN books b ON b.isbn = ob.isbn
+        WHERE ob.occupation_id = ?
+    """
+    params = [occupation_id]
+
+    if available_only:
+        sql += " AND b.available = 1"
+
+    sql += " ORDER BY b.title"
+
+    db = get_db()
+    occ = db.execute("SELECT * FROM occupations WHERE id = ?", (occupation_id,)).fetchone()
+    if occ is None:
+        db.close()
+        return jsonify({"error": "Not found"}), 404
+
+    books = [dict(r) for r in db.execute(sql, params).fetchall()]
+    db.close()
+
+    return jsonify({"occupation": dict(occ), "books": books})
+
+
 if __name__ == "__main__":
     app.run(debug=True)

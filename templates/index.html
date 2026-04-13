@@ -12,32 +12,67 @@
   </header>
 
   <main>
-    <section class="search-box">
-      <div class="search-row">
-        <input type="text" id="query" placeholder="タイトル・著者名・ISBNで検索..." autocomplete="off">
-        <button id="search-btn">検索</button>
-      </div>
-      <div class="filter-row">
-        <label>
-          ジャンル:
-          <select id="genre">
-            <option value="">すべて</option>
-            {% for g in genres %}
-            <option value="{{ g }}">{{ g }}</option>
-            {% endfor %}
-          </select>
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" id="available-only">
-          貸出可能のみ表示
-        </label>
-      </div>
-    </section>
+    <!-- タブ -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="search">蔵書検索</button>
+      <button class="tab-btn" data-tab="occupation">職業別おすすめ</button>
+    </div>
 
-    <section id="results-section">
-      <div id="result-count"></div>
-      <div id="results"></div>
-    </section>
+    <!-- 蔵書検索タブ -->
+    <div id="tab-search" class="tab-panel">
+      <section class="search-box">
+        <div class="search-row">
+          <input type="text" id="query" placeholder="タイトル・著者名・ISBNで検索..." autocomplete="off">
+          <button id="search-btn">検索</button>
+        </div>
+        <div class="filter-row">
+          <label>
+            ジャンル:
+            <select id="genre">
+              <option value="">すべて</option>
+              {% for g in genres %}
+              <option value="{{ g }}">{{ g }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="available-only">
+            貸出可能のみ表示
+          </label>
+        </div>
+      </section>
+
+      <section id="results-section">
+        <div id="result-count"></div>
+        <div id="results"></div>
+      </section>
+    </div>
+
+    <!-- 職業別おすすめタブ -->
+    <div id="tab-occupation" class="tab-panel hidden">
+      <section class="search-box">
+        <div class="occ-filter-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="occ-available-only">
+            貸出可能のみ表示
+          </label>
+        </div>
+      </section>
+
+      <!-- 職業一覧 -->
+      <div id="occ-list-view">
+        <p class="section-lead">職業を選ぶと、関連するおすすめ図書を表示します。</p>
+        <div id="occ-cards"></div>
+      </div>
+
+      <!-- 職業別書籍一覧 -->
+      <div id="occ-book-view" class="hidden">
+        <button id="occ-back-btn" class="back-btn">&larr; 職業一覧に戻る</button>
+        <div id="occ-book-header"></div>
+        <div id="occ-book-count"></div>
+        <div id="occ-books"></div>
+      </div>
+    </div>
   </main>
 
   <!-- Detail modal -->
@@ -49,13 +84,34 @@
   </div>
 
   <script>
-    const queryInput = document.getElementById('query');
-    const genreSelect = document.getElementById('genre');
+    /* ---- Utilities ---- */
+    function escHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    /* ---- Tab switching ---- */
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+      });
+    });
+
+    /* ==============================
+       蔵書検索タブ
+    ============================== */
+    const queryInput   = document.getElementById('query');
+    const genreSelect  = document.getElementById('genre');
     const availableOnly = document.getElementById('available-only');
-    const searchBtn = document.getElementById('search-btn');
-    const resultsEl = document.getElementById('results');
-    const resultCount = document.getElementById('result-count');
-    const overlay = document.getElementById('modal-overlay');
+    const resultsEl    = document.getElementById('results');
+    const resultCount  = document.getElementById('result-count');
+    const overlay      = document.getElementById('modal-overlay');
     const modalContent = document.getElementById('modal-content');
 
     let debounceTimer;
@@ -70,25 +126,26 @@
 
       fetch('/api/search?' + params.toString())
         .then(r => r.json())
-        .then(books => render(books));
+        .then(books => renderBooks(books, resultsEl, resultCount));
     }
 
-    function render(books) {
-      resultCount.textContent = `${books.length} 件見つかりました`;
+    function renderBooks(books, container, countEl) {
+      if (countEl) countEl.textContent = `${books.length} 件見つかりました`;
       if (books.length === 0) {
-        resultsEl.innerHTML = '<p class="no-result">該当する書籍はありませんでした。</p>';
+        container.innerHTML = '<p class="no-result">該当する書籍はありませんでした。</p>';
         return;
       }
-      resultsEl.innerHTML = books.map(b => `
+      container.innerHTML = books.map(b => `
         <div class="book-card ${b.available ? 'available' : 'unavailable'}" data-id="${b.id}">
           <div class="book-status">${b.available ? '貸出可' : '貸出中'}</div>
           <div class="book-title">${escHtml(b.title)}</div>
           <div class="book-author">${escHtml(b.author)}</div>
           <div class="book-meta">${escHtml(b.genre)} &middot; ${b.year ?? ''}年</div>
+          ${b.note ? `<div class="book-note">${escHtml(b.note)}</div>` : ''}
         </div>
       `).join('');
 
-      document.querySelectorAll('.book-card').forEach(card => {
+      container.querySelectorAll('.book-card').forEach(card => {
         card.addEventListener('click', () => showDetail(card.dataset.id));
       });
     }
@@ -111,15 +168,7 @@
         });
     }
 
-    function escHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    }
-
-    searchBtn.addEventListener('click', search);
+    document.getElementById('search-btn').addEventListener('click', search);
     queryInput.addEventListener('keydown', e => { if (e.key === 'Enter') search(); });
     queryInput.addEventListener('input', () => {
       clearTimeout(debounceTimer);
@@ -131,8 +180,74 @@
     document.getElementById('modal-close').addEventListener('click', () => overlay.classList.add('hidden'));
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
 
-    // Initial load
-    search();
+    search(); // 初期表示
+
+    /* ==============================
+       職業別おすすめタブ
+    ============================== */
+    const occCards     = document.getElementById('occ-cards');
+    const occListView  = document.getElementById('occ-list-view');
+    const occBookView  = document.getElementById('occ-book-view');
+    const occBookHeader = document.getElementById('occ-book-header');
+    const occBookCount = document.getElementById('occ-book-count');
+    const occBooks     = document.getElementById('occ-books');
+    const occAvailOnly = document.getElementById('occ-available-only');
+    let currentOccId   = null;
+
+    function loadOccupations() {
+      fetch('/api/occupations')
+        .then(r => r.json())
+        .then(list => {
+          occCards.innerHTML = list.map(o => `
+            <div class="occ-card" data-id="${o.id}">
+              <div class="occ-icon">${escHtml(o.icon)}</div>
+              <div class="occ-name">${escHtml(o.name)}</div>
+              <div class="occ-desc">${escHtml(o.description)}</div>
+              <div class="occ-count">${o.book_count} 冊</div>
+            </div>
+          `).join('');
+
+          occCards.querySelectorAll('.occ-card').forEach(card => {
+            card.addEventListener('click', () => showOccupationBooks(Number(card.dataset.id)));
+          });
+        });
+    }
+
+    function showOccupationBooks(occId) {
+      currentOccId = occId;
+      const params = new URLSearchParams();
+      if (occAvailOnly.checked) params.set('available_only', '1');
+
+      fetch(`/api/occupations/${occId}/books?` + params.toString())
+        .then(r => r.json())
+        .then(data => {
+          const { occupation: occ, books } = data;
+          occBookHeader.innerHTML = `
+            <div class="occ-book-title">
+              <span class="occ-icon-lg">${escHtml(occ.icon)}</span>
+              <div>
+                <h2>${escHtml(occ.name)}</h2>
+                <p>${escHtml(occ.description)}</p>
+              </div>
+            </div>
+          `;
+          occListView.classList.add('hidden');
+          occBookView.classList.remove('hidden');
+          renderBooks(books, occBooks, occBookCount);
+        });
+    }
+
+    document.getElementById('occ-back-btn').addEventListener('click', () => {
+      occBookView.classList.add('hidden');
+      occListView.classList.remove('hidden');
+      currentOccId = null;
+    });
+
+    occAvailOnly.addEventListener('change', () => {
+      if (currentOccId !== null) showOccupationBooks(currentOccId);
+    });
+
+    loadOccupations();
   </script>
 </body>
 </html>

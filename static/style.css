@@ -221,3 +221,159 @@ main {
 
 .status-ok { color: #00b894; font-weight: 700; }
 .status-ng { color: #d63031; font-weight: 700; }
+
+/* ---- Tabs ---- */
+.tabs {
+  display: flex;
+  gap: .4rem;
+  margin-bottom: 1.4rem;
+}
+
+.tab-btn {
+  padding: .6rem 1.4rem;
+  border: 2px solid #dfe6e9;
+  border-radius: 6px;
+  background: #fff;
+  font-size: .95rem;
+  cursor: pointer;
+  color: #636e72;
+  font-weight: 600;
+  transition: background .15s, color .15s, border-color .15s;
+}
+
+.tab-btn.active {
+  background: #2c3e50;
+  color: #fff;
+  border-color: #2c3e50;
+}
+
+.tab-btn:not(.active):hover {
+  border-color: #2c3e50;
+  color: #2c3e50;
+}
+
+/* ---- Occupation filter row ---- */
+.occ-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ---- Section lead ---- */
+.section-lead {
+  font-size: .95rem;
+  color: #636e72;
+  margin-bottom: 1rem;
+}
+
+/* ---- Occupation cards grid ---- */
+#occ-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.occ-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.2rem 1.2rem 1.4rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,.07);
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+  border-top: 4px solid #6c5ce7;
+  text-align: center;
+}
+
+.occ-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0,0,0,.12);
+}
+
+.occ-icon {
+  font-size: 2rem;
+  margin-bottom: .5rem;
+}
+
+.occ-name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: .4rem;
+}
+
+.occ-desc {
+  font-size: .78rem;
+  color: #636e72;
+  line-height: 1.4;
+  margin-bottom: .6rem;
+}
+
+.occ-count {
+  font-size: .82rem;
+  color: #6c5ce7;
+  font-weight: 700;
+}
+
+/* ---- Occupation book view ---- */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .5rem 1rem;
+  border: 1.5px solid #dfe6e9;
+  border-radius: 6px;
+  background: #fff;
+  font-size: .9rem;
+  cursor: pointer;
+  margin-bottom: 1.2rem;
+  color: #2d3436;
+  transition: background .15s;
+}
+
+.back-btn:hover { background: #f0f0f0; }
+
+.occ-book-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.2rem 1.4rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,.07);
+  margin-bottom: 1.2rem;
+  border-left: 5px solid #6c5ce7;
+}
+
+.occ-icon-lg { font-size: 2.4rem; }
+
+.occ-book-title h2 {
+  font-size: 1.2rem;
+  margin-bottom: .3rem;
+}
+
+.occ-book-title p {
+  font-size: .88rem;
+  color: #636e72;
+}
+
+#occ-book-count {
+  font-size: .9rem;
+  color: #636e72;
+  margin-bottom: .8rem;
+}
+
+#occ-books {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+/* ---- Book note (occupation context) ---- */
+.book-note {
+  font-size: .75rem;
+  color: #6c5ce7;
+  margin-top: .5rem;
+  line-height: 1.4;
+  border-top: 1px dashed #e0e0e0;
+  padding-top: .4rem;
+}
