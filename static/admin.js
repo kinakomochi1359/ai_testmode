@@ -108,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initLookup();
   initCSV();
+  initOccMaster();
   initOccLinks();
   loadBooks();
   initEditModal();
@@ -521,6 +522,109 @@ function confirmDelete(id, title) {
   pendingDeleteId = id;
   setText('confirm-msg', `「${title}」を削除します。よろしいですか？`);
   show('confirm-overlay');
+}
+
+/* ================================================================
+   ③-b 職業マスタ管理
+================================================================ */
+let allOccMaster = [];
+
+function initOccMaster() {
+  document.getElementById('occ-add-btn').addEventListener('click', addOccupation);
+  loadOccMaster();
+}
+
+async function loadOccMaster() {
+  const res    = await fetch('/api/admin/occupations');
+  allOccMaster = await res.json();
+  renderOccMaster();
+}
+
+function renderOccMaster() {
+  const list = document.getElementById('occ-master-list');
+  setText('occ-master-count', `${allOccMaster.length} 件`);
+
+  if (allOccMaster.length === 0) {
+    list.innerHTML = '<p class="no-result">登録された職業はありません。</p>';
+    return;
+  }
+
+  list.innerHTML = allOccMaster.map(o => `
+    <div class="occ-master-card" data-occ-id="${o.id}">
+      <div class="occ-master-top">
+        <span class="occ-master-icon">${esc(o.icon || '')}</span>
+        <input class="occ-master-name form-input" data-field="name" value="${esc(o.name)}" placeholder="職業名">
+        <span class="occ-book-count">${o.book_count} 冊</span>
+        <button class="btn-primary occ-save-btn" data-occ-id="${o.id}">保存</button>
+      </div>
+      <div class="occ-master-icon-row">
+        <label class="form-label" style="flex:0 0 auto; min-width:0">
+          アイコン
+          <input class="occ-master-icon-input form-input occ-icon-input" data-field="icon" value="${esc(o.icon || '')}" placeholder="💻" maxlength="4">
+        </label>
+      </div>
+      <textarea class="occ-master-desc form-input occ-desc-input" data-field="desc" rows="2"
+                placeholder="解説">${esc(o.description || '')}</textarea>
+      <span class="occ-save-msg" id="occ-msg-${o.id}"></span>
+    </div>`).join('');
+
+  list.querySelectorAll('.occ-save-btn').forEach(btn =>
+    btn.addEventListener('click', () => saveOccupation(Number(btn.dataset.occId)))
+  );
+}
+
+async function saveOccupation(id) {
+  const card = document.querySelector(`.occ-master-card[data-occ-id="${id}"]`);
+  const name  = card.querySelector('[data-field="name"]').value.trim();
+  const icon  = card.querySelector('[data-field="icon"]').value.trim();
+  const desc  = card.querySelector('[data-field="desc"]').value.trim();
+  const msg   = document.getElementById(`occ-msg-${id}`);
+  msg.textContent = '';
+
+  if (!name) { msg.className = 'occ-save-msg form-error'; msg.textContent = '職業名は必須です'; return; }
+
+  const res  = await fetch(`/api/admin/occupations/${id}`, {
+    method:  'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ name, description: desc, icon }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    msg.className = 'occ-save-msg form-error'; msg.textContent = data.error;
+  } else {
+    allOccMaster = allOccMaster.map(o => o.id === id ? data : o);
+    msg.className = 'occ-save-msg form-success'; msg.textContent = '保存しました';
+    setTimeout(() => { msg.textContent = ''; }, 1500);
+  }
+}
+
+async function addOccupation() {
+  const name = document.getElementById('occ-add-name').value.trim();
+  const icon = document.getElementById('occ-add-icon').value.trim();
+  const desc = document.getElementById('occ-add-desc').value.trim();
+  const errEl = document.getElementById('occ-add-error');
+  const okEl  = document.getElementById('occ-add-success');
+  errEl.textContent = ''; okEl.textContent = '';
+
+  if (!name) { errEl.textContent = '職業名は必須です'; return; }
+
+  const res  = await fetch('/api/admin/occupations', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ name, description: desc, icon }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    errEl.textContent = data.error;
+  } else {
+    okEl.textContent = `「${data.name}」を追加しました`;
+    document.getElementById('occ-add-name').value = '';
+    document.getElementById('occ-add-icon').value = '';
+    document.getElementById('occ-add-desc').value = '';
+    allOccMaster = [...allOccMaster, data];
+    renderOccMaster();
+    setTimeout(() => { okEl.textContent = ''; }, 2000);
+  }
 }
 
 /* ================================================================

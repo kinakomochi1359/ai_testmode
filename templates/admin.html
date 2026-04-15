@@ -81,6 +81,42 @@
       </div>
     </section>
 
+    <!-- ③-b 職業マスタ管理 -->
+    <section class="admin-card">
+      <h2 class="admin-section-title">職業マスタ管理</h2>
+
+      <!-- 新規追加フォーム -->
+      <div class="occ-add-form">
+        <h3 class="occ-links-title">職業を追加する</h3>
+        <div class="occ-add-row">
+          <label class="form-label" style="flex:0 0 auto">
+            アイコン（絵文字）
+            <input type="text" id="occ-add-icon" class="form-input occ-icon-input" placeholder="例: 💻" maxlength="4">
+          </label>
+          <label class="form-label" style="flex:1">
+            職業名 <span class="required">*</span>
+            <input type="text" id="occ-add-name" class="form-input" placeholder="例: データサイエンティスト">
+          </label>
+        </div>
+        <label class="form-label">
+          解説（職業のおすすめ理由など）
+          <textarea id="occ-add-desc" class="form-input occ-desc-input" rows="2" placeholder="例: データ分析・機械学習に取り組む方向けの推薦図書"></textarea>
+        </label>
+        <div style="margin-top:.6rem">
+          <button id="occ-add-btn" class="btn-primary">追加する</button>
+          <span id="occ-add-error"   class="form-error"   style="margin-left:.8rem"></span>
+          <span id="occ-add-success" class="form-success" style="margin-left:.8rem"></span>
+        </div>
+      </div>
+
+      <!-- 職業一覧 -->
+      <div class="occ-links-header" style="margin-top:1.4rem">
+        <h3 class="occ-links-title">登録済み職業</h3>
+        <span id="occ-master-count" class="list-count"></span>
+      </div>
+      <div id="occ-master-list" class="occ-master-list"></div>
+    </section>
+
     <!-- ④ 職業別おすすめ 紐づけ管理 -->
     <section class="admin-card">
       <h2 class="admin-section-title">職業別おすすめ 紐づけ管理</h2>

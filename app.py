@@ -447,6 +447,71 @@ def admin_toggle_available(book_id):
 
 
 # ================================================================
+# 職業マスタ 管理
+# ================================================================
+@app.route("/api/admin/occupations")
+def admin_list_occupations():
+    db = get_db()
+    rows = db.execute("""
+        SELECT o.id, o.name, o.description, o.icon,
+               COUNT(ob.id) AS book_count
+        FROM occupations o
+        LEFT JOIN occupation_books ob ON ob.occupation_id = o.id
+        GROUP BY o.id ORDER BY o.id
+    """).fetchall()
+    db.close()
+    return jsonify([dict(r) for r in rows])
+
+
+@app.route("/api/admin/occupations", methods=["POST"])
+def admin_add_occupation():
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    if not name:
+        return jsonify({"error": "職業名は必須です"}), 400
+    db = get_db()
+    try:
+        cur = db.execute(
+            "INSERT INTO occupations (name, description, icon) VALUES (?, ?, ?)",
+            (name, (data.get("description") or "").strip(), (data.get("icon") or "").strip()))
+        occ_id = cur.lastrowid
+        db.commit()
+    except sqlite3.IntegrityError:
+        db.close()
+        return jsonify({"error": "同じ名前の職業がすでに存在します"}), 409
+    row = db.execute("SELECT o.id, o.name, o.description, o.icon, 0 AS book_count FROM occupations o WHERE o.id = ?", (occ_id,)).fetchone()
+    db.close()
+    return jsonify(dict(row)), 201
+
+
+@app.route("/api/admin/occupations/<int:occ_id>", methods=["PUT"])
+def admin_update_occupation(occ_id):
+    data = request.get_json(silent=True) or {}
+    allowed = {"name", "description", "icon"}
+    updates = {k: v for k, v in data.items() if k in allowed}
+    if not updates:
+        return jsonify({"error": "更新できるフィールドがありません"}), 400
+    set_clause = ", ".join(f"{k} = ?" for k in updates)
+    vals = list(updates.values()) + [occ_id]
+    db = get_db()
+    try:
+        db.execute(f"UPDATE occupations SET {set_clause} WHERE id = ?", vals)
+        db.commit()
+    except sqlite3.IntegrityError:
+        db.close()
+        return jsonify({"error": "同じ名前の職業がすでに存在します"}), 409
+    row = db.execute("""
+        SELECT o.id, o.name, o.description, o.icon, COUNT(ob.id) AS book_count
+        FROM occupations o LEFT JOIN occupation_books ob ON ob.occupation_id = o.id
+        WHERE o.id = ? GROUP BY o.id
+    """, (occ_id,)).fetchone()
+    db.close()
+    if row is None:
+        return jsonify({"error": "Not found"}), 404
+    return jsonify(dict(row))
+
+
+# ================================================================
 # 職業別おすすめ 管理
 # ================================================================
 @app.route("/api/admin/occupation-books")

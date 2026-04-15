@@ -656,6 +656,33 @@ main {
 }
 .occ-links-title { font-size: 1rem; font-weight: 600; color: #2d3436; }
 
+/* 職業マスタ管理 */
+.occ-add-form {
+  background: #f8f9fa;
+  border: 1.5px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  margin-bottom: .8rem;
+}
+.occ-add-row { display: flex; gap: .8rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: .6rem; }
+.occ-icon-input  { width: 80px; text-align: center; font-size: 1.3rem; }
+.occ-desc-input  { width: 100%; resize: vertical; }
+.occ-master-list { display: flex; flex-direction: column; gap: .8rem; }
+.occ-master-card {
+  background: #f8f9fa;
+  border: 1.5px solid #dfe6e9;
+  border-radius: 8px;
+  padding: .8rem 1rem;
+}
+.occ-master-top  { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: .5rem; }
+.occ-master-icon { font-size: 1.4rem; width: 2rem; text-align: center; flex-shrink: 0; }
+.occ-master-name { flex: 1; min-width: 120px; font-weight: 600; }
+.occ-master-icon-row { margin-bottom: .4rem; }
+.occ-master-desc { width: 100%; }
+.occ-book-count  { font-size: .8rem; color: #636e72; white-space: nowrap; }
+.occ-save-btn    { margin-left: auto; }
+.occ-save-msg    { font-size: .85rem; margin-left: .4rem; }
+
 /* ---- テーブル ---- */
 .table-wrap { overflow-x: auto; }
 
