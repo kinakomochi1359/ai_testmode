@@ -344,9 +344,6 @@ async function startCsvImport() {
       await sleep(300);  // API レート制限対策
     }
 
-    // ジャンル未設定の場合は NDC を代用
-    if (!book.genre) book.genre = book.ndc || '';
-
     // 登録
     let status = '', cls = '';
     try {
