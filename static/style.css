@@ -646,6 +646,16 @@ main {
 
 .list-count { font-size: .85rem; color: #636e72; white-space: nowrap; }
 
+.occ-links-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .8rem;
+  margin: 1.4rem 0 .8rem;
+}
+.occ-links-title { font-size: 1rem; font-weight: 600; color: #2d3436; }
+
 /* ---- テーブル ---- */
 .table-wrap { overflow-x: auto; }
 

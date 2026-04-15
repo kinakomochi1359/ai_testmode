@@ -108,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initLookup();
   initCSV();
+  initOccLinks();
   loadBooks();
   initEditModal();
   initConfirmModal();
@@ -520,4 +521,154 @@ function confirmDelete(id, title) {
   pendingDeleteId = id;
   setText('confirm-msg', `「${title}」を削除します。よろしいですか？`);
   show('confirm-overlay');
+}
+
+/* ================================================================
+   ④ 職業別おすすめ 紐づけ管理
+================================================================ */
+let occCsvData  = [];
+let allOccLinks = [];
+
+function initOccLinks() {
+  document.getElementById('occ-csv-file').addEventListener('change', onOccCsvChange);
+  document.getElementById('occ-csv-start-btn').addEventListener('click', startOccCsvImport);
+  document.getElementById('occ-links-search').addEventListener('input', () => renderOccLinks(allOccLinks));
+  loadOccLinks();
+}
+
+function onOccCsvChange(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  setText('occ-csv-filename', file.name);
+  hide('occ-csv-progress');
+  document.getElementById('occ-csv-results').innerHTML = '';
+  const reader = new FileReader();
+  reader.onload = ev => parseOccCsv(ev.target.result);
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseOccCsv(text) {
+  const firstLine = text.split('\n')[0];
+  const sep = firstLine.includes('\t') ? '\t' : firstLine.includes(';') ? ';' : ',';
+  const rows = text.trim().split('\n').map(l =>
+    l.split(sep).map(c => c.trim().replace(/^"|"$/g, ''))
+  );
+  if (rows.length < 1) { alert('データが見つかりません'); return; }
+
+  // ヘッダー行を自動スキップ（先頭セルが "isbn" または "ISBN" の場合）
+  const hasHeader = /^isbn$/i.test(rows[0][0]);
+  const dataRows  = hasHeader ? rows.slice(1) : rows;
+
+  occCsvData = dataRows
+    .filter(r => r.length >= 2 && r[0] && r[1])
+    .map(r => ({
+      isbn:            r[0].replace(/[^0-9X]/gi, ''),
+      occupation_name: r[1].trim(),
+      note:            (r[2] || '').trim(),
+    }))
+    .filter(d => d.isbn.length > 0 && d.occupation_name.length > 0);
+
+  setText('occ-csv-detect-msg', `${occCsvData.length} 件の紐づけデータが見つかりました。`);
+
+  const listEl  = document.getElementById('occ-csv-isbn-list');
+  const preview = occCsvData.slice(0, 5);
+  listEl.innerHTML = preview.map(d =>
+    `<div class="csv-isbn-row">${esc(d.isbn)} → ${esc(d.occupation_name)}${d.note ? ' (' + esc(d.note) + ')' : ''}</div>`
+  ).join('') + (occCsvData.length > 5 ? `<div class="csv-isbn-more">…他 ${occCsvData.length - 5} 件</div>` : '');
+
+  show('occ-csv-preview');
+}
+
+async function startOccCsvImport() {
+  if (occCsvData.length === 0) { alert('データがありません'); return; }
+  const btn = document.getElementById('occ-csv-start-btn');
+  btn.disabled = true;
+  show('occ-csv-progress');
+  document.getElementById('occ-csv-results').innerHTML = '';
+
+  const total = occCsvData.length;
+  let done = 0, success = 0;
+
+  function updateProgress() {
+    const pct = total ? Math.round(done / total * 100) : 0;
+    document.getElementById('occ-progress-bar').style.width = pct + '%';
+    setText('occ-progress-text', `${done} / ${total} 件処理中… (登録済: ${success} 件)`);
+  }
+  updateProgress();
+
+  for (const item of occCsvData) {
+    let status = '', cls = '';
+    try {
+      const res  = await fetch('/api/admin/occupation-books', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(item),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        status = `✓ ${esc(item.isbn)} → ${esc(item.occupation_name)}`; cls = 'csv-ok'; success++;
+      } else if (res.status === 409) {
+        status = `― ${esc(item.isbn)} → ${esc(item.occupation_name)} 重複のためスキップ`; cls = 'csv-skip';
+      } else {
+        status = `✗ ${esc(item.isbn)} ${esc(data.error || '')}`; cls = 'csv-err';
+      }
+    } catch {
+      status = `✗ ${esc(item.isbn)} ネットワークエラー`; cls = 'csv-err';
+    }
+    const li = document.createElement('li');
+    li.className = cls; li.innerHTML = status;
+    document.getElementById('occ-csv-results').appendChild(li);
+    done++; updateProgress();
+  }
+
+  setText('occ-progress-text', `完了: ${total} 件中 ${success} 件を登録しました`);
+  btn.disabled = false;
+  loadOccLinks();
+}
+
+async function loadOccLinks() {
+  const res   = await fetch('/api/admin/occupation-books');
+  allOccLinks = await res.json();
+  renderOccLinks(allOccLinks);
+}
+
+function renderOccLinks(links) {
+  const q = document.getElementById('occ-links-search').value.trim().toLowerCase();
+  const filtered = q
+    ? links.filter(l =>
+        (l.occupation_name ?? '').toLowerCase().includes(q) ||
+        (l.title           ?? '').toLowerCase().includes(q) ||
+        (l.isbn            ?? '').includes(q))
+    : links;
+
+  setText('occ-links-count', `${filtered.length} 件`);
+  const empty = document.getElementById('occ-links-empty');
+  const tbody = document.getElementById('occ-links-tbody');
+
+  if (filtered.length === 0) { tbody.innerHTML = ''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+
+  tbody.innerHTML = filtered.map(l => {
+    const thumb = thumbnailUrl(l.isbn);
+    return `<tr>
+      <td><span class="genre-tag">${esc(l.occupation_name)}</span></td>
+      <td class="col-cover">${thumb
+        ? `<img class="thumb" src="${esc(thumb)}" alt="" onerror="this.style.display='none'">`
+        : '<span class="no-thumb">-</span>'}</td>
+      <td>${esc(l.title)}</td>
+      <td>${esc(l.isbn)}</td>
+      <td>${esc(l.note || '')}</td>
+      <td><button class="btn-delete" data-link-id="${l.id}" data-occ-del>削除</button></td>
+    </tr>`;
+  }).join('');
+
+  tbody.querySelectorAll('[data-occ-del]').forEach(btn =>
+    btn.addEventListener('click', async () => {
+      const id = Number(btn.dataset.linkId);
+      if (!confirm('この紐づけを削除しますか？')) return;
+      await fetch(`/api/admin/occupation-books/${id}`, { method: 'DELETE' });
+      allOccLinks = allOccLinks.filter(l => l.id !== id);
+      renderOccLinks(allOccLinks);
+    })
+  );
 }

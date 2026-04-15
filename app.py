@@ -446,5 +446,81 @@ def admin_toggle_available(book_id):
     return jsonify(dict(book))
 
 
+# ================================================================
+# 職業別おすすめ 管理
+# ================================================================
+@app.route("/api/admin/occupation-books")
+def admin_list_occ_books():
+    db = get_db()
+    rows = db.execute("""
+        SELECT ob.id, o.name AS occupation_name, o.icon AS occupation_icon,
+               b.isbn, b.title, b.author, b.thumbnail_url, ob.note
+        FROM occupation_books ob
+        JOIN occupations o ON o.id = ob.occupation_id
+        JOIN books b ON b.isbn = ob.isbn
+        ORDER BY o.name, b.title
+    """).fetchall()
+    db.close()
+    return jsonify([dict(r) for r in rows])
+
+
+@app.route("/api/admin/occupation-books", methods=["POST"])
+def admin_add_occ_book():
+    data     = request.get_json(silent=True) or {}
+    isbn     = (data.get("isbn") or "").strip()
+    occ_name = (data.get("occupation_name") or "").strip()
+    note     = (data.get("note") or "").strip()
+
+    if not isbn:
+        return jsonify({"error": "ISBN は必須です"}), 400
+    if not occ_name:
+        return jsonify({"error": "職業名は必須です"}), 400
+
+    db = get_db()
+    book = db.execute("SELECT id FROM books WHERE isbn = ?", (isbn,)).fetchone()
+    if book is None:
+        db.close()
+        return jsonify({"error": f"ISBN {isbn} の書籍が登録されていません"}), 404
+
+    occ = db.execute("SELECT id FROM occupations WHERE name = ?", (occ_name,)).fetchone()
+    if occ is None:
+        cur    = db.execute(
+            "INSERT INTO occupations (name, description, icon) VALUES (?, '', '')",
+            (occ_name,))
+        occ_id = cur.lastrowid
+    else:
+        occ_id = occ["id"]
+
+    try:
+        cur     = db.execute(
+            "INSERT INTO occupation_books (occupation_id, isbn, note) VALUES (?, ?, ?)",
+            (occ_id, isbn, note))
+        link_id = cur.lastrowid
+        db.commit()
+    except sqlite3.IntegrityError:
+        db.close()
+        return jsonify({"error": "この組み合わせはすでに登録されています"}), 409
+
+    row = db.execute("""
+        SELECT ob.id, o.name AS occupation_name, o.icon AS occupation_icon,
+               b.isbn, b.title, b.author, b.thumbnail_url, ob.note
+        FROM occupation_books ob
+        JOIN occupations o ON o.id = ob.occupation_id
+        JOIN books b ON b.isbn = ob.isbn
+        WHERE ob.id = ?
+    """, (link_id,)).fetchone()
+    db.close()
+    return jsonify(dict(row)), 201
+
+
+@app.route("/api/admin/occupation-books/<int:link_id>", methods=["DELETE"])
+def admin_delete_occ_book(link_id):
+    db = get_db()
+    db.execute("DELETE FROM occupation_books WHERE id = ?", (link_id,))
+    db.commit()
+    db.close()
+    return jsonify({"ok": True})
+
+
 if __name__ == "__main__":
     app.run(debug=True)
