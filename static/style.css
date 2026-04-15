@@ -415,6 +415,16 @@ main {
   gap: 2rem;
 }
 
+.admin-tabs {
+  margin-bottom: 0;
+}
+
+.admin-main > .tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
 .admin-card {
   background: #fff;
   border-radius: 12px;

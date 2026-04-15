@@ -106,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
       genres.map(g => `<option value="${esc(g)}">`).join('');
   });
 
+  initTabs();
   initLookup();
   initCSV();
   initOccMaster();
@@ -114,6 +115,20 @@ document.addEventListener('DOMContentLoaded', () => {
   initEditModal();
   initConfirmModal();
 });
+
+/* ================================================================
+   タブ切り替え
+================================================================ */
+function initTabs() {
+  document.querySelectorAll('.admin-tabs .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.admin-main > .tab-panel').forEach(p => p.classList.add('hidden'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+    });
+  });
+}
 
 /* ================================================================
    ① ISBN 照会・登録
@@ -373,7 +388,8 @@ function renderTable(books) {
     ? books.filter(b =>
         (b.title          ?? '').toLowerCase().includes(q) ||
         (b.responsibility ?? '').toLowerCase().includes(q) ||
-        (b.author         ?? '').toLowerCase().includes(q))
+        (b.author         ?? '').toLowerCase().includes(q) ||
+        (b.isbn           ?? '').replace(/-/g, '').includes(q.replace(/-/g, '')))
     : books;
 
   setText('list-count', `${filtered.length} 件`);
