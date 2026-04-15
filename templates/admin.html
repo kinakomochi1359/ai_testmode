@@ -16,20 +16,15 @@
 
   <main class="admin-main">
 
-    <!-- ========== ISBN 照会・登録 ========== -->
+    <!-- ① ISBN 照会・登録 -->
     <section class="admin-card">
       <h2 class="admin-section-title">ISBN 照会・登録</h2>
-
       <div class="lookup-row">
         <input type="text" id="isbn-input" placeholder="例: 978-4-86140-505-1" autocomplete="off" maxlength="17">
         <button id="lookup-btn" class="btn-primary">照会</button>
       </div>
       <p id="lookup-error" class="form-error hidden"></p>
-
-      <!-- プレビューパネル -->
       <div id="preview-panel" class="preview-panel hidden">
-
-        <!-- 上部: 書影 + NDLバッジ -->
         <div class="preview-top">
           <div class="preview-cover">
             <img id="preview-img" src="" alt="書影"
@@ -37,150 +32,56 @@
             <div id="no-cover" class="no-cover" style="display:none">書影なし</div>
           </div>
           <div class="preview-top-right">
-            <div class="preview-ndl-badge">国立国会図書館より取得</div>
-            <p class="preview-hint">内容を確認・編集のうえ登録してください。<br>
-              <strong>ジャンル（蔵書管理用）</strong> のみ必ず入力してください。</p>
+            <span class="preview-ndl-badge">国立国会図書館より取得</span>
+            <p class="preview-hint"><strong>ジャンル（蔵書管理用）</strong>のみ必ず入力してください。</p>
           </div>
         </div>
-
-        <!-- フォーム本体 -->
-        <div class="bib-form">
-
-          <!-- 識別子 -->
-          <fieldset class="bib-section">
-            <legend>識別子</legend>
-            <div class="form-grid">
-              <label class="form-label">ISBN <span class="required">*</span>
-                <input type="text" id="f-isbn" class="form-input" readonly>
-              </label>
-              <label class="form-label">ISSN
-                <input type="text" id="f-issn" class="form-input">
-              </label>
-              <label class="form-label">書誌ID（NDLBibID）
-                <input type="text" id="f-ndl_bib_id" class="form-input">
-              </label>
-              <label class="form-label">識別子（URI）
-                <input type="text" id="f-ndl_uri" class="form-input">
-              </label>
-            </div>
-          </fieldset>
-
-          <!-- タイトル情報 -->
-          <fieldset class="bib-section">
-            <legend>タイトル情報</legend>
-            <div class="form-grid">
-              <label class="form-label col-span-2">タイトル <span class="required">*</span>
-                <input type="text" id="f-title" class="form-input" placeholder="タイトルを入力">
-              </label>
-              <label class="form-label col-span-2">タイトルよみ
-                <input type="text" id="f-title_kana" class="form-input">
-              </label>
-              <label class="form-label col-span-2">並列タイトル
-                <input type="text" id="f-parallel_title" class="form-input">
-              </label>
-              <label class="form-label col-span-2">シリーズタイトル
-                <input type="text" id="f-series_title" class="form-input">
-              </label>
-              <label class="form-label">版
-                <input type="text" id="f-edition" class="form-input" placeholder="例: 第2版">
-              </label>
-              <label class="form-label">刊行巻次
-                <input type="text" id="f-volume" class="form-input" placeholder="例: 上">
-              </label>
-            </div>
-          </fieldset>
-
-          <!-- 責任表示・出版情報 -->
-          <fieldset class="bib-section">
-            <legend>責任表示・出版情報</legend>
-            <div class="form-grid">
-              <label class="form-label col-span-2">責任表示
-                <input type="text" id="f-responsibility" class="form-input" placeholder="例: 蛭田廣一 監修">
-              </label>
-              <label class="form-label col-span-2">著者（dc:creator）
-                <input type="text" id="f-author" class="form-input" placeholder="例: 夏目漱石">
-              </label>
-              <label class="form-label col-span-2">出版者
-                <input type="text" id="f-publisher" class="form-input">
-              </label>
-              <label class="form-label">出版地（国名コード）
-                <input type="text" id="f-pub_place" class="form-input" placeholder="例: JP">
-              </label>
-              <label class="form-label">出版年月日等
-                <input type="text" id="f-pub_date" class="form-input" placeholder="例: 2024.6">
-              </label>
-              <label class="form-label">出版年（W3CDTF）
-                <input type="number" id="f-year" class="form-input" min="1000" max="2099" placeholder="例: 2024">
-              </label>
-              <label class="form-label">大きさ、容量等
-                <input type="text" id="f-extent" class="form-input" placeholder="例: 167p ; 21cm">
-              </label>
-            </div>
-          </fieldset>
-
-          <!-- 分類・件名 -->
-          <fieldset class="bib-section">
-            <legend>分類・件名</legend>
-            <div class="form-grid">
-              <label class="form-label">分類（NDC）
-                <input type="text" id="f-ndc" class="form-input" placeholder="例: 014.72">
-              </label>
-              <label class="form-label">分類（NDLC）
-                <input type="text" id="f-ndlc" class="form-input" placeholder="例: UL587">
-              </label>
-              <label class="form-label col-span-2">件名標目
-                <input type="text" id="f-subject" class="form-input" placeholder="例: 郷土資料--日本">
-              </label>
-              <label class="form-label col-span-2">ジャンル・形式用語
-                <input type="text" id="f-genre_form" class="form-input">
-              </label>
-              <label class="form-label">請求記号
-                <input type="text" id="f-call_number" class="form-input" placeholder="例: UL587-R3">
-              </label>
-              <label class="form-label">
-                ジャンル（蔵書管理用）<span class="required">*</span>
-                <input type="text" id="f-genre" class="form-input" list="genre-list"
-                       placeholder="例: 小説 / コンピュータ" style="border-color:#6c5ce7">
-                <datalist id="genre-list"></datalist>
-                <span class="form-hint">検索画面のジャンル絞り込みに使用します</span>
-              </label>
-            </div>
-          </fieldset>
-
-          <!-- 補足情報 -->
-          <fieldset class="bib-section">
-            <legend>補足情報</legend>
-            <div class="form-grid">
-              <label class="form-label col-span-2">注記
-                <input type="text" id="f-notes" class="form-input" placeholder="例: 動画解説付">
-              </label>
-              <label class="form-label">本文の言語コード（ISO639-2）
-                <input type="text" id="f-language" class="form-input" placeholder="例: jpn">
-              </label>
-              <label class="form-label">資料種別
-                <input type="text" id="f-material_type" class="form-input" placeholder="例: 図書">
-              </label>
-              <label class="form-label">資料形態
-                <input type="text" id="f-material_form" class="form-input" placeholder="例: 紙">
-              </label>
-              <label class="form-label">アクセスURL
-                <input type="url" id="f-access_url" class="form-input">
-              </label>
-            </div>
-          </fieldset>
-
-        </div><!-- /.bib-form -->
-
+        <div id="preview-form" class="bib-form"></div>
         <div class="preview-actions">
           <button id="register-btn" class="btn-primary">この本を登録する</button>
           <button id="cancel-btn" class="btn-ghost">キャンセル</button>
         </div>
         <p id="register-error"   class="form-error hidden"></p>
         <p id="register-success" class="form-success hidden"></p>
-      </div><!-- /#preview-panel -->
+      </div>
     </section>
 
-    <!-- ========== 蔵書一覧 ========== -->
+    <!-- ② CSV 一括登録 -->
+    <section class="admin-card">
+      <h2 class="admin-section-title">CSV 一括登録</h2>
+      <div class="csv-format-note">
+        <strong>対応形式</strong><br>
+        ・<b>NDL サーチ エクスポート CSV</b>（タブ区切り）― API 呼び出しなしで高速登録<br>
+        ・<b>ISBN リスト</b>（1行1ISBN）― NDL API を順次照会して登録
+      </div>
+      <div class="csv-upload-row">
+        <label class="btn-ghost file-label">
+          ファイルを選択
+          <input type="file" id="csv-file" accept=".csv,.tsv,.txt" style="display:none">
+        </label>
+        <span id="csv-filename" class="csv-filename">未選択</span>
+      </div>
+      <div id="csv-preview" class="hidden">
+        <p id="csv-detect-msg" class="csv-detect-msg"></p>
+        <div class="csv-genre-row">
+          <label class="form-label" style="max-width:260px">
+            ジャンル（蔵書管理用）<span class="required">*</span>
+            <input type="text" id="csv-genre" class="form-input" list="genre-list" placeholder="例: 図書">
+          </label>
+        </div>
+        <div id="csv-isbn-list" class="csv-isbn-list"></div>
+        <button id="csv-start-btn" class="btn-primary">一括登録を開始する</button>
+      </div>
+      <div id="csv-progress" class="hidden">
+        <div class="progress-bar-wrap">
+          <div id="progress-bar" class="progress-bar" style="width:0%"></div>
+        </div>
+        <p id="progress-text" class="progress-text">0 / 0 件処理中…</p>
+        <ul id="csv-results" class="csv-results"></ul>
+      </div>
+    </section>
+
+    <!-- ③ 登録済み蔵書一覧 -->
     <section class="admin-card">
       <div class="book-list-header">
         <h2 class="admin-section-title">登録済み蔵書一覧</h2>
@@ -189,7 +90,6 @@
           <span id="list-count" class="list-count"></span>
         </div>
       </div>
-
       <div class="table-wrap">
         <table id="book-table">
           <thead>
@@ -199,8 +99,8 @@
               <th class="col-genre">ジャンル</th>
               <th class="col-ndc">NDC</th>
               <th class="col-year">出版年</th>
-              <th class="col-isbn">ISBN</th>
-              <th class="col-status">貸出状況</th>
+              <th class="col-reg">登録日</th>
+              <th class="col-status">貸出</th>
               <th class="col-action"></th>
             </tr>
           </thead>
@@ -212,8 +112,26 @@
 
   </main>
 
+  <!-- 編集モーダル -->
+  <div id="edit-overlay" class="modal-overlay hidden">
+    <div id="edit-modal" class="edit-modal">
+      <div class="edit-modal-header">
+        <h2 id="edit-modal-title">書誌事項の編集</h2>
+        <button id="edit-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="edit-modal-meta" id="edit-meta"></div>
+      <div id="edit-form" class="bib-form edit-modal-body"></div>
+      <div class="edit-modal-footer">
+        <button id="edit-save" class="btn-primary">保存する</button>
+        <button id="edit-cancel" class="btn-ghost">キャンセル</button>
+        <p id="edit-error"   class="form-error hidden"></p>
+        <p id="edit-success" class="form-success hidden"></p>
+      </div>
+    </div>
+  </div>
+
   <!-- 削除確認モーダル -->
-  <div id="confirm-overlay" class="hidden">
+  <div id="confirm-overlay" class="modal-overlay hidden">
     <div id="confirm-modal">
       <p id="confirm-msg"></p>
       <div class="confirm-actions">
@@ -223,245 +141,8 @@
     </div>
   </div>
 
-  <script>
-    /* ---- utils ---- */
-    function esc(s) {
-      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-    function thumbnailUrl(isbn) {
-      const c = String(isbn).replace(/[^0-9X]/gi,'');
-      return c.length === 13 ? `https://ndlsearch.ndl.go.jp/thumbnail/${c}.jpg` : null;
-    }
-    const show = id => document.getElementById(id).classList.remove('hidden');
-    const hide = id => document.getElementById(id).classList.add('hidden');
-    const setText = (id, t) => document.getElementById(id).textContent = t;
-    const val = id => document.getElementById(id).value.trim();
-    const setVal = (id, v) => { document.getElementById(id).value = v ?? ''; };
+  <datalist id="genre-list"></datalist>
 
-    /* ---- ジャンル datalist ---- */
-    fetch('/api/search').then(r => r.json()).then(books => {
-      const genres = [...new Set(books.map(b => b.genre))].sort();
-      document.getElementById('genre-list').innerHTML =
-        genres.map(g => `<option value="${esc(g)}">`).join('');
-    });
-
-    /* ================================================================
-       ISBN 照会
-    ================================================================ */
-    const isbnInput    = document.getElementById('isbn-input');
-    const lookupBtn    = document.getElementById('lookup-btn');
-    const previewPanel = document.getElementById('preview-panel');
-
-    function resetPreview() {
-      previewPanel.classList.add('hidden');
-      hide('lookup-error');
-      hide('register-error');
-      hide('register-success');
-    }
-
-    async function doLookup() {
-      const isbn = isbnInput.value.trim();
-      if (!isbn) return;
-      lookupBtn.disabled = true;
-      lookupBtn.textContent = '照会中…';
-      hide('lookup-error');
-      try {
-        const res  = await fetch('/api/admin/lookup?' + new URLSearchParams({ isbn }));
-        const data = await res.json();
-        if (!res.ok) {
-          setText('lookup-error', data.error);
-          show('lookup-error');
-          previewPanel.classList.add('hidden');
-        } else {
-          fillPreview(data);
-        }
-      } catch {
-        setText('lookup-error', 'ネットワークエラーが発生しました');
-        show('lookup-error');
-      } finally {
-        lookupBtn.disabled = false;
-        lookupBtn.textContent = '照会';
-      }
-    }
-
-    /* フィールド名→input id の対応 */
-    const FIELD_IDS = [
-      'isbn','issn','ndl_bib_id','ndl_uri',
-      'title','title_kana','parallel_title','series_title','edition','volume',
-      'responsibility','author','publisher','pub_place','pub_date','year','extent',
-      'ndc','ndlc','subject','genre_form','call_number',
-      'notes','language','material_type','material_form','access_url',
-    ];
-
-    function fillPreview(data) {
-      FIELD_IDS.forEach(f => setVal('f-' + f, data[f]));
-      // ジャンルはクリア（手動入力必須）
-      setVal('f-genre', '');
-
-      const img     = document.getElementById('preview-img');
-      const noCover = document.getElementById('no-cover');
-      if (data.thumbnail_url) {
-        img.src = data.thumbnail_url;
-        img.style.display = '';
-        noCover.style.display = 'none';
-      } else {
-        img.style.display = 'none';
-        noCover.style.display = 'flex';
-      }
-      hide('register-error');
-      hide('register-success');
-      previewPanel.classList.remove('hidden');
-      previewPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    lookupBtn.addEventListener('click', doLookup);
-    isbnInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLookup(); });
-    document.getElementById('cancel-btn').addEventListener('click', resetPreview);
-
-    /* ================================================================
-       書籍登録
-    ================================================================ */
-    document.getElementById('register-btn').addEventListener('click', async () => {
-      hide('register-error');
-      hide('register-success');
-
-      const body = {};
-      FIELD_IDS.forEach(f => { const v = val('f-' + f); if (v) body[f] = v; });
-      body.genre = val('f-genre');
-      // year を数値に変換
-      if (body.year) body.year = parseInt(body.year) || null;
-
-      if (!body.title)  { setText('register-error', 'タイトルは必須です'); show('register-error'); return; }
-      if (!body.genre)  { setText('register-error', 'ジャンル（蔵書管理用）は必須です'); show('register-error'); return; }
-      if (!body.isbn)   { setText('register-error', 'ISBN は必須です'); show('register-error'); return; }
-
-      const btn = document.getElementById('register-btn');
-      btn.disabled = true; btn.textContent = '登録中…';
-      try {
-        const res  = await fetch('/api/admin/books', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          setText('register-error', data.error); show('register-error');
-        } else {
-          setText('register-success', `「${data.title}」を登録しました`);
-          show('register-success');
-          isbnInput.value = '';
-          setTimeout(resetPreview, 2000);
-          loadBooks();
-        }
-      } catch {
-        setText('register-error', 'ネットワークエラーが発生しました'); show('register-error');
-      } finally {
-        btn.disabled = false; btn.textContent = 'この本を登録する';
-      }
-    });
-
-    /* ================================================================
-       蔵書一覧
-    ================================================================ */
-    let allBooks = [];
-    const tbody      = document.getElementById('book-tbody');
-    const listSearch = document.getElementById('list-search');
-
-    async function loadBooks() {
-      const res = await fetch('/api/admin/books');
-      allBooks  = await res.json();
-      renderTable(allBooks);
-    }
-
-    function renderTable(books) {
-      const q = listSearch.value.trim().toLowerCase();
-      const filtered = q
-        ? books.filter(b =>
-            (b.title  ?? '').toLowerCase().includes(q) ||
-            (b.author ?? '').toLowerCase().includes(q) ||
-            (b.responsibility ?? '').toLowerCase().includes(q))
-        : books;
-
-      setText('list-count', `${filtered.length} 件`);
-
-      const empty = document.getElementById('table-empty');
-      if (filtered.length === 0) {
-        tbody.innerHTML = '';
-        empty.classList.remove('hidden');
-        return;
-      }
-      empty.classList.add('hidden');
-
-      tbody.innerHTML = filtered.map(b => {
-        const thumb = thumbnailUrl(b.isbn);
-        const resp  = b.responsibility || b.author || '';
-        return `<tr data-id="${b.id}">
-          <td class="col-cover">
-            ${thumb
-              ? `<img class="thumb" src="${esc(thumb)}" alt="" onerror="this.style.display='none'">`
-              : '<span class="no-thumb">-</span>'}
-          </td>
-          <td class="col-title">
-            <div class="book-title-cell">${esc(b.title)}</div>
-            <div class="book-author-cell">${esc(resp)}</div>
-            ${b.series_title ? `<div class="book-series-cell">${esc(b.series_title)}</div>` : ''}
-          </td>
-          <td class="col-genre"><span class="genre-tag">${esc(b.genre)}</span></td>
-          <td class="col-ndc">${esc(b.ndc ?? '')}</td>
-          <td class="col-year">${b.year ?? '-'}</td>
-          <td class="col-isbn"><span class="isbn-text">${esc(b.isbn)}</span></td>
-          <td class="col-status">
-            <button class="status-btn ${b.available ? 'status-ok' : 'status-ng'}"
-                    data-id="${b.id}" data-toggle>
-              ${b.available ? '貸出可' : '貸出中'}
-            </button>
-          </td>
-          <td class="col-action">
-            <button class="btn-delete" data-id="${b.id}" data-title="${esc(b.title)}" data-del>削除</button>
-          </td>
-        </tr>`;
-      }).join('');
-
-      tbody.querySelectorAll('[data-toggle]').forEach(btn =>
-        btn.addEventListener('click', () => toggleAvailable(Number(btn.dataset.id))));
-      tbody.querySelectorAll('[data-del]').forEach(btn =>
-        btn.addEventListener('click', () => confirmDelete(Number(btn.dataset.id), btn.dataset.title)));
-    }
-
-    listSearch.addEventListener('input', () => renderTable(allBooks));
-
-    async function toggleAvailable(id) {
-      const res = await fetch(`/api/admin/books/${id}/available`, { method: 'PUT' });
-      const data = await res.json();
-      allBooks = allBooks.map(b => b.id === id ? data : b);
-      renderTable(allBooks);
-    }
-
-    /* ---- 削除確認 ---- */
-    let pendingDeleteId = null;
-    const confirmOverlay = document.getElementById('confirm-overlay');
-
-    function confirmDelete(id, title) {
-      pendingDeleteId = id;
-      setText('confirm-msg', `「${title}」を削除します。よろしいですか？`);
-      confirmOverlay.classList.remove('hidden');
-    }
-
-    document.getElementById('confirm-ok').addEventListener('click', async () => {
-      if (pendingDeleteId === null) return;
-      await fetch(`/api/admin/books/${pendingDeleteId}`, { method: 'DELETE' });
-      allBooks = allBooks.filter(b => b.id !== pendingDeleteId);
-      renderTable(allBooks);
-      confirmOverlay.classList.add('hidden');
-      pendingDeleteId = null;
-    });
-
-    document.getElementById('confirm-cancel').addEventListener('click', () => {
-      confirmOverlay.classList.add('hidden');
-      pendingDeleteId = null;
-    });
-
-    loadBooks();
-  </script>
+  <script src="/static/admin.js"></script>
 </body>
 </html>

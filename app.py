@@ -404,7 +404,7 @@ def admin_update_book(book_id):
     if not data:
         return jsonify({"error": "更新データがありません"}), 400
 
-    allowed = set(_BOOK_FIELDS) - {"isbn"}   # ISBN は変更不可
+    allowed = set(_BOOK_FIELDS) - {"isbn", "registered_at"}   # ISBN・登録日は変更不可
     updates = {k: v for k, v in data.items() if k in allowed}
     if not updates:
         return jsonify({"error": "更新できるフィールドがありません"}), 400

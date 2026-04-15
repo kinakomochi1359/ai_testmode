@@ -139,7 +139,8 @@ def init():
             -- 蔵書管理（独自）
             genre           TEXT NOT NULL DEFAULT '',
             available       INTEGER NOT NULL DEFAULT 1,
-            thumbnail_url   TEXT
+            thumbnail_url   TEXT,
+            registered_at   TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
         )
     """)
 

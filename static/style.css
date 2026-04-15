@@ -771,3 +771,197 @@ main {
 }
 
 .confirm-actions { display: flex; gap: .6rem; }
+
+/* ================================================================
+   CSV 一括登録
+================================================================ */
+.csv-format-note {
+  font-size: .85rem;
+  color: #636e72;
+  background: #f5f6fa;
+  border-radius: 8px;
+  padding: .9rem 1.1rem;
+  margin-bottom: 1.2rem;
+  line-height: 1.7;
+}
+
+.csv-upload-row { display: flex; align-items: center; gap: .8rem; margin-bottom: 1rem; }
+
+.file-label {
+  cursor: pointer;
+  display: inline-block;
+}
+
+.csv-filename { font-size: .88rem; color: #636e72; }
+
+.csv-detect-msg {
+  font-size: .9rem;
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: .8rem;
+}
+
+.csv-genre-row { margin-bottom: .8rem; }
+
+.csv-isbn-list {
+  background: #f8f9fb;
+  border: 1.5px solid #e8eaf0;
+  border-radius: 6px;
+  padding: .6rem .9rem;
+  margin-bottom: 1rem;
+  font-size: .85rem;
+  font-family: monospace;
+}
+
+.csv-isbn-row  { padding: .15rem 0; color: #2d3436; }
+.csv-isbn-more { padding: .15rem 0; color: #636e72; font-style: italic; }
+
+/* プログレスバー */
+.progress-bar-wrap {
+  background: #e8eaf0;
+  border-radius: 99px;
+  height: 10px;
+  overflow: hidden;
+  margin-bottom: .5rem;
+}
+
+.progress-bar {
+  background: #2c3e50;
+  height: 100%;
+  border-radius: 99px;
+  transition: width .2s;
+}
+
+.progress-text {
+  font-size: .88rem;
+  color: #636e72;
+  margin-bottom: .8rem;
+}
+
+/* 結果リスト */
+.csv-results {
+  list-style: none;
+  font-size: .85rem;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1.5px solid #e8eaf0;
+  border-radius: 6px;
+  padding: .4rem .6rem;
+}
+
+.csv-results li { padding: .2rem 0; border-bottom: 1px solid #f5f5f5; }
+.csv-results li:last-child { border-bottom: none; }
+.csv-ok   { color: #00b894; }
+.csv-skip { color: #636e72; }
+.csv-err  { color: #d63031; }
+
+/* ================================================================
+   編集モーダル
+================================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 300;
+  padding: 2rem 1rem;
+  overflow-y: auto;
+}
+
+.edit-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 780px;
+  box-shadow: 0 12px 48px rgba(0,0,0,.22);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.edit-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 1.6rem;
+  border-bottom: 1.5px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  border-radius: 12px 12px 0 0;
+  z-index: 1;
+}
+
+.edit-modal-header h2 {
+  font-size: 1.1rem;
+  line-height: 1.3;
+  color: #2d3436;
+  flex: 1;
+  margin-right: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: #636e72;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.modal-close-btn:hover { color: #2d3436; }
+
+.edit-modal-meta {
+  display: flex;
+  gap: 1.2rem;
+  padding: .6rem 1.6rem;
+  background: #f8f9fb;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: .82rem;
+  color: #636e72;
+}
+
+.edit-meta-item::before { content: ''; }
+
+.edit-modal-body {
+  padding: 1.2rem 1.6rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.edit-modal-footer {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  padding: 1rem 1.6rem;
+  border-top: 1.5px solid #f0f0f0;
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-radius: 0 0 12px 12px;
+}
+
+/* 編集・削除ボタン（テーブル列） */
+.btn-edit {
+  background: none;
+  border: 1.5px solid #dfe6e9;
+  border-radius: 5px;
+  padding: .28rem .6rem;
+  font-size: .8rem;
+  color: #2c3e50;
+  cursor: pointer;
+  margin-right: .3rem;
+  transition: border-color .15s, background .15s;
+}
+.btn-edit:hover { border-color: #2c3e50; background: #f0f2f5; }
+
+/* 登録日列 */
+.col-reg { width: 90px; font-size: .82rem; color: #636e72; white-space: nowrap; }
+
+/* col-action を少し広げる（編集+削除が並ぶため） */
+.col-action { width: 110px; text-align: center; white-space: nowrap; }
