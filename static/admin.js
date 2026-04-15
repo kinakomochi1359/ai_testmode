@@ -314,9 +314,6 @@ function parseCsvFile(text) {
 }
 
 async function startCsvImport() {
-  const genre = val('csv-genre');
-  if (!genre) { alert('ジャンル（蔵書管理用）を入力してください'); return; }
-
   const btn = document.getElementById('csv-start-btn');
   btn.disabled = true;
   show('csv-progress');
@@ -334,18 +331,21 @@ async function startCsvImport() {
   updateProgress();
 
   for (const bookBase of csvBooks) {
-    let book = { ...bookBase, genre };
+    let book = { ...bookBase };
 
     // ISBN リスト形式のみ NDL API 照会
     if (csvMode === 'isbn') {
       try {
         const res  = await fetch('/api/admin/lookup?' + new URLSearchParams({ isbn: book.isbn }));
         const data = await res.json();
-        if (res.ok) book = { ...data, genre };
+        if (res.ok) book = { ...data };
         // 失敗しても isbn のみで続行
       } catch { /* ネットワークエラーは無視して続行 */ }
       await sleep(300);  // API レート制限対策
     }
+
+    // ジャンル未設定の場合は NDC を代用
+    if (!book.genre) book.genre = book.ndc || '';
 
     // 登録
     let status = '', cls = '';

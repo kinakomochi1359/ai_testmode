@@ -369,8 +369,6 @@ def admin_add_book():
     data = request.get_json(silent=True) or {}
     if not data.get("title"):
         return jsonify({"error": "タイトルは必須です"}), 400
-    if not data.get("genre"):
-        return jsonify({"error": "ジャンル（蔵書管理用）は必須です"}), 400
     if not data.get("isbn"):
         return jsonify({"error": "ISBN は必須です"}), 400
 
